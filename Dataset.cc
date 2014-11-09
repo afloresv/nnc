@@ -33,7 +33,7 @@ class Dataset {
 	Point& operator[](const int& i) {
 		return p[i];
 	}
-	double dist(int a, int b) {
+	double distance(int a, int b) {
 		return sqrt(sqdist(a,b));
 	}
 	double sqdist(int a, int b) {
