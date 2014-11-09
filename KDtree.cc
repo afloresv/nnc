@@ -10,6 +10,8 @@ using namespace std;
 
 class KDtree {
 
+	protected:
+	
 	Dataset &D;
 	int root, nn, sp;
 	double rad;
@@ -43,6 +45,11 @@ class KDtree {
 
 	void check (int ind) {
 		if (enemy && D[ind].c==D[sp].c) return;
+		if (sp==ind) {
+			nn = ind;
+			rad = -1.0;
+			return;
+		}
 		double d = D.sqdist(ind,sp);
 		if (d < rad) {
 			nn = ind;
@@ -72,7 +79,9 @@ class KDtree {
 
 	public:
 
-	KDtree (Dataset &_D) : D(_D) {}
+	KDtree (Dataset &_D) : D(_D) {
+		enemy = false;
+	}
 
 	void use (Subset &S) {
 		int k=0;
@@ -82,15 +91,10 @@ class KDtree {
 		root = build(0,k,0);
 	}
 
-	int search (int _sp, bool _enemy=false) {
+	int search (int _sp) {
 		sp = _sp;
-		enemy = _enemy;
 		rad = numeric_limits<double>::max();
 		search_rec(root,0);
 		return nn;
-	}
-
-	int searchEnemy (int sp) {
-		return search(sp,true);
 	}
 };
