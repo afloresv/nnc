@@ -15,7 +15,7 @@ class KDtree {
 	Dataset &D;
 	int root, nn, sp;
 	double rad;
-	bool enemy;
+	bool enemy, smatch;
 
 	struct kdnode {
 		int p,l,r;
@@ -23,9 +23,9 @@ class KDtree {
 	} *T;
 
 	struct kdorder {
-		Dataset D;
+		Dataset &D;
 		int k;
-		kdorder(Dataset _D, int _k) : D(_D), k(_k) {}
+		kdorder(Dataset &_D, int _k) : D(_D), k(_k) {}
 		bool operator() (kdnode a, kdnode b) {
 			return (D[a.p][k] < D[b.p][k]);
 		}
@@ -46,8 +46,10 @@ class KDtree {
 	void check (int ind) {
 		if (enemy && D[ind].c==D[sp].c) return;
 		if (sp==ind) {
-			nn = ind;
-			rad = -1.0;
+			if (smatch) {
+				nn = ind;
+				rad = -1.0;
+			}
 			return;
 		}
 		double d = D.sqdist(ind,sp);
@@ -81,6 +83,7 @@ class KDtree {
 
 	KDtree (Dataset &_D) : D(_D) {
 		enemy = false;
+		smatch = true;
 	}
 
 	void use (Subset &S) {
@@ -89,6 +92,13 @@ class KDtree {
 		for (int i=0 ; i<D.size() ; i++)
 			if (S[i]) T[k++].p = i;
 		root = build(0,k,0);
+	}
+
+	void all () {
+		T = new kdnode[D.size()];
+		for (int i=D.size()-1 ; i>=0 ; i--)
+			T[i].p = i;
+		root = build(0,D.size(),0);
 	}
 
 	int search (int _sp) {
