@@ -1,0 +1,11 @@
+CNN
+FCNN
+NEHS
+
+*.swp
+
+generation/*
+Paper/*
+results/*
+
+dataset/normalize
