@@ -1,8 +1,12 @@
 #include <iostream>
 #include <cstdio>
+#include <cstdlib>
 #include <cmath>
 #include <string>
+#include <map>
 #include <algorithm>
+#include <set>
+#include <utility>
 
 using namespace std;
 
@@ -19,84 +23,71 @@ class Point {
 	}
 };
 
+unsigned long long CountDistances=0ULL;
+
 class Dataset {
-	int n, m;
+	int n, m, c;
 	Point *p;
-	double **d;
 
 	public:
 	Dataset () {}
-	Dataset (int _n, int _m) : n(_n), m(_m) {
+	Dataset (int _n, int _m, int _c) : n(_n), m(_m), c(_c) {
 		p = new Point[n];
-		d = new double*[n];
-		for (int i=0 ; i<n ; i++) {
+		for (int i=0 ; i<n ; i++)
 			p[i] = Point(m);
-			d[i] = new double[n];
-			for (int j=0 ; j<n ; j++)
-				d[i][j] = -1.0;
-		}
 	}
 	int size () { return n; }
-	int dim ()  { return m; }
+	int dim  () { return m; }
+	int clss () { return c; }
 	Point& operator[] (const int& i) {
 		return p[i];
 	}
 	double distance (int a, int b) {
 		return sqrt(sqdistance(a,b));
 	}
-	double sqdistance (int a, int b) {
-		if (a>b) swap(a,b);
-		if (d[a][b]<0.0) d[a][b]=sqdist(a,b);
-		return d[a][b];
+	double distance (Point a, Point b) {
+		return sqrt(sqdist(a,b));
 	}
-	double sqdist (int a, int b) {
+	double sqdistance (int a, int b) {
+		return sqdist(p[a],p[b]);
+	}
+	double sqdist (Point &a, Point &b) {
+		CountDistances++;
 		double dist = 0.0;
 		for (int i=0 ; i<m ; i++)
-			dist += pow(p[a][i] - p[b][i],2);
+			dist += pow(a[i]-b[i], 2);
 		return dist;
 	}
-};
-
-void ReadFile (string path, int tfcv, Dataset &TR, Dataset &TS) {
-
-	FILE *src;
-	src = fopen(path.c_str(),"r");
-	if (src==NULL) {
-		cerr << "Error opening file " << path << endl;
-		exit(1);
+	void shuffle () {
+		for (int i=0 ; i<n ; i++)
+			swap(p[i],p[i + (rand() % (n-i))]);
 	}
-	
-	int n,ntr,nts,m,temp;
-	fscanf(src,"%d%d",&n,&m);
-
-	ntr = nts = 0;
-	for (int i=0 ; i<10 ; i++) {
-		fscanf(src,"%d",&temp);
-		if (i == tfcv) nts += temp;
-		else ntr += temp;
-	}
-
-	TR = Dataset(ntr,m);
-	TS = Dataset(nts,m);
-
-	Point _p, &p = _p;
-	int *clss;
-	ntr = nts = 0;
-	for (int i=0 ; i<n ; i++) {
-		fscanf(src,"%d",&temp);
-		if (temp == tfcv) {
-			TS[nts].ind = i;
-			clss = &(TS[nts].c);
-			p = TS[nts++];
-		} else {
-			TR[ntr].ind = i;
-			clss = &(TR[ntr].c);
-			p = TR[ntr++];
+	vector<int> centroids () {
+		Point *avg = new Point[c];
+		int *num = new int[c];
+		for (int i=0 ; i<c ; i++) {
+			avg[i] = Point(m);
+			for (int j=m-1 ; j>=0 ; j--)
+				avg[i][j] = 0.0;
+			num[i] = 0;
 		}
-		for (int j=0 ; j<m ; j++)
-			fscanf(src,"%lf",&p[j]);
-		fscanf(src,"%d",clss);
+		for (int i=0 ; i<n ; i++) {
+			for (int j=m-1 ; j>=0 ; j--)
+				avg[p[i].c][j] += p[i][j];
+			num[p[i].c]++;
+		}
+		for (int i=0 ; i<c ; i++)
+			for (int j=0 ; j<m ; j++)
+				avg[i][j] /= (double)num[i];
+		vector<int> res(c);
+		vector<double> d(c,numeric_limits<double>::max());
+		for (int i=0 ; i<n ; i++) {
+			double r = distance(p[i],avg[p[i].c]);
+			if (r < d[p[i].c]) {
+				d[p[i].c] = r;
+				res[p[i].c] = i;
+			}
+		}
+		return res;
 	}
-
-	fclose(src);
-}
+};
