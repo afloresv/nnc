@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define MAXINST 1000000
+#define MAXINST 1500000
 #define MAXATTR 100
 
 char   rowInd[MAXATTR+1];

@@ -17,11 +17,11 @@ class KDtree {
 	int root, spind, n;
 	Point sp;
 	bool smatch;
-	double rad;
+	double rad, sqrt_rad;
 	priority_queue<pair<double,int> > nn;
 
 	struct kdnode {
-		int p,l,r;
+		int p,l,r,min,max;
 		kdnode () {}
 	};
 	vector<kdnode> T;
@@ -42,6 +42,8 @@ class KDtree {
 		//nth_element(T.begin()+l,T.begin()+m,T.begin()+r,ko);
 		sort(T.begin()+l,T.begin()+r,ko);
 		for (; m!=l && D[T[m].p][k]==D[T[m-1].p][k] ; m--);
+		T[m].min = T[l].p;
+		T[m].max = T[r-1].p;
 		k = (k+1) % D.dim();
 		T[m].l = build(l,m,k);
 		T[m].r = build(m+1,r,k);
@@ -53,10 +55,12 @@ class KDtree {
 		if (spind==ind) {
 			if (!smatch) return;
 		} else d = D.sqdist(D[ind],sp);
-		if (d < rad || (d==rad && D[ind].c==sp.c)) {
+		if (d<rad || (d==rad && D[ind].c==sp.c)) {
 			nn.push(make_pair(d,ind));
 			nn.pop();
 			rad = nn.top().first;
+			if (rad<0.0) sqrt_rad = 0.0;
+			else sqrt_rad = sqrt(rad);
 		}
 	}
 
@@ -67,24 +71,30 @@ class KDtree {
 			return;
 		}
 		double d = D[nd->p][k]-sp[k];
-		k = (k+1) % D.dim();
-		if (nd->l==-1 || (nd->r!=-1 && d<=0)) {
-			search_rec(nd->r,k);
-			if (nd->l!=-1 && rad >= d*d)
-				search_rec(nd->l,k);
+		int _k = (k+1) % D.dim();
+		if (D[nd->p][k] <= sp[k]) {
+			if (nd->r!=-1 && sp[k]-sqrt_rad<=D[nd->max][k])
+				search_rec(nd->r,_k);
+			if (sp[k]-sqrt_rad<=D[nd->p][k]) {
+				check(nd->p);
+				if (nd->l!=-1) search_rec(nd->l,_k);
+			}
 		} else {
-			search_rec(nd->l,k);
-			if (nd->r!=-1 && rad >= d*d)
-				search_rec(nd->r,k);
+			if (nd->l!=-1 && sp[k]+sqrt_rad>=D[nd->min][k])
+				search_rec(nd->l,_k);
+			if (sp[k]+sqrt_rad>=D[nd->p][k]) {
+				check(nd->p);
+				if (nd->r!=-1) search_rec(nd->r,_k);
+			}
 		}
-		check(nd->p);
 	}
 
 	vector<int> search_begin (int k) {
 		while (!nn.empty()) nn.pop();
-		rad = numeric_limits<double>::max();
+		rad = D.sqdist(D[T[root].p],sp);
+		sqrt_rad = sqrt(rad);
 		for (int i=0 ; i<k ; i++)
-			nn.push(make_pair(numeric_limits<double>::max(),-1));
+			nn.push(make_pair(rad,T[root].p));
 		search_rec(root,0);
 		vector<int> res(k);
 		for (int i=k-1 ; i>=0 ; i--) {
@@ -105,12 +115,12 @@ class KDtree {
 	void use (Subset &S, int cls=-1) {
 		n = 0;
 		for (int i=0 ; i<D.size() ; i++)
-			if (S[i] && (cls==-1 || cls==D[i].c))
+			if (S[i] && cls!=D[i].c)
 				n++;
 		T = vector<kdnode>(n);
 		n = 0;
 		for (int i=0 ; i<D.size() ; i++)
-			if (S[i] && (cls==-1 || cls==D[i].c))
+			if (S[i] && cls!=D[i].c)
 				T[n++].p = i;
 		root = build(0,n,0);
 	}
@@ -118,12 +128,12 @@ class KDtree {
 	void all (int cls=-1) {
 		n = 0;
 		for (int i=0 ; i<D.size() ; i++)
-			if (cls==-1 || cls==D[i].c)
+			if (cls!=D[i].c)
 				n++;
 		T = vector<kdnode>(n);
 		n = 0;
 		for (int i=0 ; i<D.size() ; i++)
-			if (cls==-1 || cls==D[i].c)
+			if (cls!=D[i].c)
 				T[n++].p = i;
 		root = build(0,n,0);
 	}

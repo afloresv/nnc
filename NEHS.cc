@@ -26,8 +26,7 @@ Subset NEHS (Dataset &D) {
 		add = true;
 		for (int j=sel.size()-1 ; add && j>=0 ; j--)
 			if (D[neo[i].second].c == D[neo[sel[j]].second].c &&
-				D.distance(neo[i].second,neo[sel[j]].second)
-				< neo[sel[j]].first)
+				D.distance(neo[i].second,neo[sel[j]].second) < neo[i].first)
 				add = false;
 		if (add) {
 			sel.push_back(i);

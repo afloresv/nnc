@@ -34,6 +34,7 @@ int main(int argc, char* argv[]) {
 
 	Dataset TR, TS;
 	ReadFile(string(argv[1]),atoi(argv[2]),TR,TS);
+	// 43475
 	srand(time(NULL));
 	TR.shuffle();
 	Subset R(TR);
