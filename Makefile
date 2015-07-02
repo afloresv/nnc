@@ -1,12 +1,12 @@
-all: algnehs algrnehs algcnn algrnn algfcnn
+all: algrss algmss algcnn algrnn algfcnn
 
-algnehs:
-	rm -f NEHS
-	c++ -O3 NEHS.cc -o NEHS
+algrss:
+	rm -f RSS
+	c++ -O3 RSS.cc -o RSS
 
-algrnehs:
-	rm -f RNEHS
-	c++ -O3 RNEHS.cc -o RNEHS
+algmss:
+	rm -f MSS
+	c++ -O3 MSS.cc -o MSS
 
 algcnn:
 	rm -f CNN
