@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <sys/time.h>
+#include <time.h>
 
 using namespace std;
 
@@ -58,7 +59,7 @@ void PrintResult (Dataset &TR, Dataset &TS, Subset &R) {
 
 	struct timeval tm2;
 	gettimeofday(&tm2, NULL);
-	unsigned long long TimeEnlapsed = 1000 * (tm2.tv_sec - tm1.tv_sec) + (tm2.tv_usec - tm1.tv_usec) / 1000;
+	unsigned long long TimeEnlapsed = 1000*(tm2.tv_sec-tm1.tv_sec)+(tm2.tv_usec-tm1.tv_usec)/1000;
 
 	NearestNeighbor NN(TR);
 	NN.use(R);
@@ -89,5 +90,16 @@ void PrintResult (Dataset &TR, Dataset &TS, Subset &R) {
 		printf("%.2lf\t", 100.0*NN.wrong(TS,5)/TS.size());
 	}
 	printf("%llu\t", TimeEnlapsed);
-	printf("%llu\n", CountDistances);
+	printf("%llu\t", CountDistances);
+
+	Point q;
+	unsigned long long NumNNS=0, initCD=CountDistances;
+	clock_t ts = clock();
+	do {
+		q = Point(TR.dim(),true);
+		NN.of(q);
+		NumNNS++;
+	} while (clock()-ts <= CLOCKS_PER_SEC);
+	printf("%llu\t", NumNNS);
+	printf("%llu\n", CountDistances-initCD);
 }

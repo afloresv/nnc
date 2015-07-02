@@ -49,6 +49,7 @@ int main(int argc, char* argv[]) {
 
 	Dataset TR, TS;
 	ReadFile(string(argv[1]),atoi(argv[2]),TR,TS);
+	srand(time(NULL));
 	Subset R(TR);
 
 	R = FCNN(TR);

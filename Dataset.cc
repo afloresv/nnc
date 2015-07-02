@@ -16,8 +16,10 @@ class Point {
 	public:
 	int c, ind;
 	Point () {}
-	Point (int m) {
+	Point (int m, bool r=false) {
 		p = new double[m];
+		if (r) for (int i=0 ; i<m ; i++)
+			p[i] = ((double)rand()) / ((double)RAND_MAX);
 	}
 	double& operator[](const int& i) {
 		return p[i];
