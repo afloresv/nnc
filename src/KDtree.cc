@@ -14,6 +14,7 @@ class KDtree {
 	protected:
 	
 	Dataset &D;
+	Subset inNN;
 	int root, spind, n;
 	Point sp;
 	bool smatch;
@@ -52,11 +53,14 @@ class KDtree {
 
 	void check (int ind) {
 		double d = -1.0;
+		if (inNN[ind]) return;
 		if (spind==ind) {
 			if (!smatch) return;
 		} else d = D.sqdist(D[ind],sp);
-		if (d<rad || (d==rad && D[ind].c==sp.c)) {
+		if (d<rad) {
 			nn.push(make_pair(d,ind));
+			inNN.set(ind,true);
+			inNN.set(nn.top().second,false);
 			nn.pop();
 			rad = nn.top().first;
 			if (rad<0.0) sqrt_rad = 0.0;
@@ -91,14 +95,17 @@ class KDtree {
 
 	vector<int> search_begin (int k) {
 		while (!nn.empty()) nn.pop();
-		rad = D.sqdist(D[T[root].p],sp);
+		for (int i=0 ; i<k ; i++) {
+			nn.push(make_pair(D.sqdist(D[T[i].p],sp),T[i].p));
+			inNN.set(T[i].p,true);
+		}
+		rad = nn.top().first;
 		sqrt_rad = sqrt(rad);
-		for (int i=0 ; i<k ; i++)
-			nn.push(make_pair(rad,T[root].p));
 		search_rec(root,0);
 		vector<int> res(k);
 		for (int i=k-1 ; i>=0 ; i--) {
 			res[i] = nn.top().second;
+			inNN.set(res[i],false);
 			nn.pop();
 		}
 		return res;
@@ -106,7 +113,7 @@ class KDtree {
 
 	public:
 
-	KDtree (Dataset &_D) : D(_D) {
+	KDtree (Dataset &_D) : D(_D), inNN(Subset(D)) {
 		smatch = true;
 	}
 
