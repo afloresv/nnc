@@ -84,22 +84,20 @@ void PrintResult (Dataset &TR, Dataset &TS, Subset &R) {
 	printf("%.2lf\t", 100.0*NN.wrong()/TR.size());
 	if (TS.size()>0) {
 		printf("%.2lf\t", 100.0*NN.wrong(TS)/TS.size());
-		printf("%.2lf\t", 100.0*NN.wrong(TS,2)/TS.size());
-		printf("%.2lf\t", 100.0*NN.wrong(TS,3)/TS.size());
-		printf("%.2lf\t", 100.0*NN.wrong(TS,4)/TS.size());
-		printf("%.2lf\t", 100.0*NN.wrong(TS,5)/TS.size());
+		for (int i=3 ; i<=15 ; i+=2)
+			printf("%.2lf\t", 100.0*NN.wrong(TS,(i>R.size() ? R.size() : i))/TS.size());
 	}
 	printf("%llu\t", TimeEnlapsed);
-	printf("%llu\t", CountDistances);
+	printf("%llu\n", CountDistances);
 
-	Point q;
-	unsigned long long NumNNS=0, initCD=CountDistances;
-	clock_t ts = clock();
-	do {
-		q = Point(TR.dim(),true);
-		NN.of(q);
-		NumNNS++;
-	} while (clock()-ts <= CLOCKS_PER_SEC);
-	printf("%llu\t", NumNNS);
-	printf("%llu\n", CountDistances-initCD);
+	//Point q;
+	//unsigned long long NumNNS=0, initCD=CountDistances;
+	//clock_t ts = clock();
+	//do {
+	//	q = Point(TR.dim(),true);
+	//	NN.of(q);
+	//	NumNNS++;
+	//} while (clock()-ts <= CLOCKS_PER_SEC);
+	//printf("%llu\t", NumNNS);
+	//printf("%llu\n", CountDistances-initCD);
 }
