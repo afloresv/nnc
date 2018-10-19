@@ -4,8 +4,13 @@
 #include <algorithm>
 #include <sys/time.h>
 #include <time.h>
+#include "Dataset.h"
+#include "Subset.h"
 
 using namespace std;
+
+#ifndef IO_NNC_H
+#define IO_NNC_H
 
 static struct timeval tm1;
 
@@ -78,17 +83,41 @@ void PrintResult (Dataset &TR, Dataset &TS, Subset &R) {
 	//printf("Distances  %13llu\n", CountDistances);
 	//printf("------------------------\n");
 
-	//R.print();
+	R.print();
 
 	printf("%.2lf\t", 100.0*(double)R.size()/TR.size());
 	printf("%.2lf\t", 100.0*NN.wrong()/TR.size());
 	if (TS.size()>0) {
 		printf("%.2lf\t", 100.0*NN.wrong(TS)/TS.size());
-		for (int i=3 ; i<=15 ; i+=2)
-			printf("%.2lf\t", 100.0*NN.wrong(TS,(i>R.size() ? R.size() : i))/TS.size());
+		/*double ep = 0.1;
+		for (int i=0 ; i<10 ; i++,ep+=0.1) {
+			NN.setEpsilon(ep);
+			printf("%.2lf\t", 100.0*NN.wrong(TS)/TS.size());
+		}*/
 	}
-	printf("%llu\t", TimeEnlapsed);
-	printf("%llu\n", CountDistances);
+
+	NearestEnemy NE(TR);
+	NE.use(R);
+	double rx, r1, total;
+	vector<double> cd;
+	for (int i=0 ; i<TR.size() ; i++) {
+		if (!R[i]) {
+			rx = NE.distance(i);
+			r1 = NN.distance(i);
+			cd.push_back((rx-r1)/r1);
+			total += cd[cd.size()-1];
+		}
+	}
+	sort(cd.begin(),cd.end());
+	printf("%.2lf\t", cd[0]);
+	printf("%.2lf\t", cd[cd.size()/4]);
+	printf("%.2lf\t", cd[cd.size()/2]);
+	printf("%.2lf\t", cd[3*cd.size()/4]);
+	printf("%.2lf\t", cd[cd.size()-1]);
+	printf("%.2lf\t", total/cd.size());
+
+	printf("%llu\n", TimeEnlapsed);
+	//printf("%llu\n", CountDistances);
 
 	//Point q;
 	//unsigned long long NumNNS=0, initCD=CountDistances;
@@ -101,3 +130,5 @@ void PrintResult (Dataset &TR, Dataset &TS, Subset &R) {
 	//printf("%llu\t", NumNNS);
 	//printf("%llu\n", CountDistances-initCD);
 }
+
+#endif

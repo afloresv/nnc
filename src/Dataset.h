@@ -11,6 +11,9 @@
 
 using namespace std;
 
+#ifndef DATASET_NNC_H
+#define DATASET_NNC_H
+
 class Point {
 	double *p;
 	public:
@@ -94,3 +97,5 @@ class Dataset {
 		return res;
 	}
 };
+
+#endif

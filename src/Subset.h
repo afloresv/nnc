@@ -1,8 +1,12 @@
 #include <iostream>
 #include <cstdio>
 #include <vector>
+#include "Dataset.h"
 
 using namespace std;
+
+#ifndef SUBSET_NNC_H
+#define SUBSET_NNC_H
 
 class Subset {
 	int n;
@@ -33,9 +37,17 @@ class Subset {
 		is = S.is;
 	}
 	void print () {
-		printf("Subset with %d points\n",n);
+		fprintf(stderr, "Subset with %d points\n", n);
 		for (int i=0,_n=0 ; i<is.size() ; i++)
 			if (is[i]) printf((_n++==0 ? "%d" : ",%d"),D[i].ind);
 		printf("\n");
 	}
+	static Subset intersect(Subset a, Subset b) {
+		Subset s(a.D);
+		for (int i=0 ; i<s.D.size() ; i++)
+			s.set(i, a[i] && b[i]);
+		return s;
+	}
 };
+
+#endif

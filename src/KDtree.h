@@ -6,8 +6,13 @@
 #include <vector>
 #include <set>
 #include <queue>
+#include "Dataset.h"
+#include "Subset.h"
 
 using namespace std;
+
+#ifndef KDTREE_NNC_H
+#define KDTREE_NNC_H
 
 class KDtree {
 
@@ -18,7 +23,7 @@ class KDtree {
 	int root, spind, n;
 	Point sp;
 	bool smatch;
-	double rad, sqrt_rad;
+	double rad, sqrt_rad, stretch;
 	priority_queue<pair<double,int> > nn;
 
 	struct kdnode {
@@ -77,16 +82,16 @@ class KDtree {
 		double d = D[nd->p][k]-sp[k];
 		int _k = (k+1) % D.dim();
 		if (D[nd->p][k] <= sp[k]) {
-			if (nd->r!=-1 && sp[k]-sqrt_rad<=D[nd->max][k])
+			if (nd->r!=-1 && (sp[k]-D[nd->max][k])*stretch<=sqrt_rad)
 				search_rec(nd->r,_k);
-			if (sp[k]-sqrt_rad<=D[nd->p][k]) {
+			if ((sp[k]-D[nd->p][k])*stretch<=sqrt_rad) {
 				check(nd->p);
 				if (nd->l!=-1) search_rec(nd->l,_k);
 			}
 		} else {
-			if (nd->l!=-1 && sp[k]+sqrt_rad>=D[nd->min][k])
+			if (nd->l!=-1 && (D[nd->min][k]-sp[k])*stretch<=sqrt_rad)
 				search_rec(nd->l,_k);
-			if (sp[k]+sqrt_rad>=D[nd->p][k]) {
+			if ((D[nd->p][k]-sp[k])*stretch<=sqrt_rad) {
 				check(nd->p);
 				if (nd->r!=-1) search_rec(nd->r,_k);
 			}
@@ -99,7 +104,7 @@ class KDtree {
 			nn.push(make_pair(D.sqdist(D[T[i].p],sp),T[i].p));
 			inNN.set(T[i].p,true);
 		}
-		rad = nn.top().first;
+		rad = nn.top().first * stretch;
 		sqrt_rad = sqrt(rad);
 		search_rec(root,0);
 		vector<int> res(k);
@@ -115,9 +120,14 @@ class KDtree {
 
 	KDtree (Dataset &_D) : D(_D), inNN(Subset(D)) {
 		smatch = true;
+		stretch = 1.0;
 	}
 
 	int size () { return n; }
+
+	void setEpsilon (double epsilon) {
+		stretch = 1.0+epsilon;
+	}
 
 	void use (Subset &S, int cls=-1) {
 		n = 0;
@@ -165,3 +175,5 @@ class KDtree {
 		return search(_spind,1)[0];
 	}
 };
+
+#endif

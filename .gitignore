@@ -1,13 +1,8 @@
-CNN
-RNN
-FCNN
-MSS
-RSS
+NNC
 
 *.swp
+*.DS_Store
+*.Rhistory
 
-generation/*
-Paper/*
-results/*
-
-dataset/normalize
+utilities/generation/*
+utilities/results/*

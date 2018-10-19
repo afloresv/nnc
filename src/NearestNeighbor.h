@@ -3,8 +3,14 @@
 #include <algorithm>
 #include <set>
 #include <vector>
+#include "Dataset.h"
+#include "Subset.h"
+#include "KDtree.h"
 
 using namespace std;
+
+#ifndef NN_NNC_H
+#define NN_NNC_H
 
 class NearestNeighbor : public KDtree {
 
@@ -28,6 +34,12 @@ class NearestNeighbor : public KDtree {
 	}
 	int of (Point p) {
 		return search(p);
+	}
+	double distance (int ind) {
+		return D.distance(ind,of(ind));
+	}
+	double distance (Point p) {
+		return D.distance(p,D[of(p)]);
 	}
 	bool classify (int ind, int k=1) {
 		if (k==1) return (D[search(ind)].c == D[ind].c);
@@ -53,3 +65,5 @@ class NearestNeighbor : public KDtree {
 		return w;
 	}
 };
+
+#endif
