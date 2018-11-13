@@ -14,8 +14,8 @@ class Subset {
 	vector<bool> is;
 
 	public:
-	Subset (Dataset &_D) : D(_D) {
-		is = vector<bool>(D.size(),false);
+	Subset (Dataset &_D, bool val=false) : D(_D) {
+		is = vector<bool>(D.size(),val);
 		n = 0;
 	}
 	int size () {

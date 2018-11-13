@@ -27,6 +27,8 @@ int main(int argc, char* argv[]) {
 	else if (!alg.compare("NET"))      R = NET(TR);
 	else if (!alg.compare("MSS"))      R = MSS(TR);
 	else if (!alg.compare("AlphaMSS")) R = AlphaMSS(TR,atof(argv[4]));
+	else if (!alg.compare("RSS"))      R = RSS(TR);
+	else if (!alg.compare("AlphaRSS")) R = AlphaRSS(TR,atof(argv[4]));
 
 	R.print();
 
