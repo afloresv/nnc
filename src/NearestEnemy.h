@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <vector>
 #include <algorithm>
+#include <map>
 #include <utility>
 #include "Dataset.h"
 #include "Subset.h"
@@ -17,12 +18,16 @@ class NearestEnemy {
 	Dataset &D;
 	vector<KDtree* > nn;
 	NearestNeighbor *nnall;
+	int *neof;
 
 	public:
 	NearestEnemy (Dataset &_D) : D(_D) {
 		nnall = new NearestNeighbor(D);
 		for (int i=0 ; i<D.clss() ; i++)
 			nn.push_back(new KDtree(D));
+		neof = new int[D.size()];
+		for (int i=0 ; i<D.size() ; i++)
+			neof[i] = -1;
 	}
 	void use (Subset &S) {
 		nnall->use(S);
@@ -34,7 +39,9 @@ class NearestEnemy {
 			nn[i]->all(i);
 	}
 	int of (int ind) {
-		return nn[D[ind].c]->search(ind);
+		if (neof[ind] == -1)
+			neof[ind] = nn[D[ind].c]->search(ind);
+		return neof[ind];
 	}
 	int of (Point p) {
 		int ind = nnall->search(p);

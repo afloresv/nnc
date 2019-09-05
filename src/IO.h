@@ -3,7 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <sys/time.h>
-#include <time.h>
+#include <ctime>
 #include "Dataset.h"
 #include "Subset.h"
 
@@ -12,7 +12,7 @@ using namespace std;
 #ifndef IO_NNC_H
 #define IO_NNC_H
 
-static struct timeval tm1;
+clock_t algtime;
 
 void ReadFile (string path, int tfcv, Dataset &TR, Dataset &TS) {
 
@@ -57,78 +57,42 @@ void ReadFile (string path, int tfcv, Dataset &TR, Dataset &TS) {
 
 	fclose(src);
 
-	gettimeofday(&tm1, NULL);
+	algtime = clock();
 }
 
 void PrintResult (Dataset &TR, Dataset &TS, Subset &R) {
 
-	struct timeval tm2;
-	gettimeofday(&tm2, NULL);
-	unsigned long long TimeEnlapsed = 1000*(tm2.tv_sec-tm1.tv_sec)+(tm2.tv_usec-tm1.tv_usec)/1000;
+	if (TS.size()) {
 
-	NearestNeighbor NN(TR);
-	NN.use(R);
+		double elapsed_secs = double(clock() - algtime) / CLOCKS_PER_SEC;
 
-	//printf("------------------------\n");
-	//printf("Size             %6.2lf%%\n", 100.0*(double)R.size()/TR.size());
-	//printf("Training Error   %6.2lf%%\n", 100.0*NN.wrong()/TR.size());
-	//if (TS.size()>0) {
-	//	printf("Test Error 1-NN  %6.2lf%%\n", 100.0*NN.wrong(TS)/TS.size());
-	//	printf("Test Error 2-NN  %6.2lf%%\n", 100.0*NN.wrong(TS,2)/TS.size());
-	//	printf("Test Error 3-NN  %6.2lf%%\n", 100.0*NN.wrong(TS,3)/TS.size());
-	//	printf("Test Error 4-NN  %6.2lf%%\n", 100.0*NN.wrong(TS,4)/TS.size());
-	//	printf("Test Error 5-NN  %6.2lf%%\n", 100.0*NN.wrong(TS,5)/TS.size());
-	//}
-	//printf("Time (ms)  %13llu\n", TimeEnlapsed);
-	//printf("Distances  %13llu\n", CountDistances);
-	//printf("------------------------\n");
+		NearestNeighbor NN(TR);
+		NN.use(R);
 
-	R.print();
+		printf("%.4lf\t", 100.0*(double)R.size()/TR.size());	// Size
+		printf("%.4lf\t", 100.0*NN.wrong(TS)/TS.size());		// Error
 
-	printf("%.2lf\t", 100.0*(double)R.size()/TR.size());
-	printf("%.2lf\t", 100.0*NN.wrong()/TR.size());
-	if (TS.size()>0) {
-		printf("%.2lf\t", 100.0*NN.wrong(TS)/TS.size());
-		/*double ep = 0.1;
-		for (int i=0 ; i<10 ; i++,ep+=0.1) {
-			NN.setEpsilon(ep);
-			printf("%.2lf\t", 100.0*NN.wrong(TS)/TS.size());
-		}*/
-	}
-
-	NearestEnemy NE(TR);
-	NE.use(R);
-	double rx, r1, total;
-	vector<double> cd;
-	for (int i=0 ; i<TR.size() ; i++) {
-		if (!R[i]) {
-			rx = NE.distance(i);
-			r1 = NN.distance(i);
-			cd.push_back((rx-r1)/r1);
-			total += cd[cd.size()-1];
+		NearestEnemy NE(TR);
+		NE.use(R);
+		double cd_total;
+		vector<double> cd;
+		for (int i=0 ; i<TS.size() ; i++) {
+			cd.push_back(NE.chrom_density(TS[i]));
+			cd_total += cd[cd.size()-1];
 		}
+
+		sort(cd.begin(),cd.end());
+		printf("%.4lf\t", cd[0]);								// Min CD
+		printf("%.4lf\t", cd[cd.size()/4]);						// 1/4 CD
+		printf("%.4lf\t", cd[cd.size()/2]);						// Median CD
+		printf("%.4lf\t", cd[3*cd.size()/4]);					// 3/4 CD
+		printf("%.4lf\t", cd[cd.size()-1]);						// Max CD
+		printf("%.4lf\t", cd_total/cd.size());					// Average CD
+		printf("%.4lf\n", elapsed_secs);						// Time
+
+	} else {
+		R.print();
 	}
-	sort(cd.begin(),cd.end());
-	printf("%.2lf\t", cd[0]);
-	printf("%.2lf\t", cd[cd.size()/4]);
-	printf("%.2lf\t", cd[cd.size()/2]);
-	printf("%.2lf\t", cd[3*cd.size()/4]);
-	printf("%.2lf\t", cd[cd.size()-1]);
-	printf("%.2lf\t", total/cd.size());
-
-	printf("%llu\n", TimeEnlapsed);
-	//printf("%llu\n", CountDistances);
-
-	//Point q;
-	//unsigned long long NumNNS=0, initCD=CountDistances;
-	//clock_t ts = clock();
-	//do {
-	//	q = Point(TR.dim(),true);
-	//	NN.of(q);
-	//	NumNNS++;
-	//} while (clock()-ts <= CLOCKS_PER_SEC);
-	//printf("%llu\t", NumNNS);
-	//printf("%llu\n", CountDistances-initCD);
 }
 
 #endif

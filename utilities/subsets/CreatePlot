@@ -1,6 +1,14 @@
 #!/bin/bash
 
-../../NNC $1 ../../dataset/synthetic/circle.txt -1 $2 > sel/tmp.csv 2>>/dev/null
-Rscript PlotVoronoi.R 2>>/dev/null
-mv sel/tmp.csv sel/$1$2.csv
-mv img/tmp.pdf img/$1$2.pdf
+mkdir -p sel
+mkdir -p img
+
+../../NNC $1 $2 -1 &> sel/tmp.csv
+
+Rscript --vanilla PlotVoronoi.R $2 2>>/dev/null
+
+f=$(basename $2 .txt)
+mkdir -p sel/$f
+mkdir -p img/$f
+mv sel/tmp.csv sel/$f/$1.csv
+mv img/tmp.pdf img/$f/$1.pdf

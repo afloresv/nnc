@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for file in `ls ../../dataset/synthetic/v-*.txt`
+do
+	f=$(basename $file .txt)
+	echo -en "$f"
+	./table $file
+done

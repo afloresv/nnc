@@ -1,10 +1,16 @@
 library(deldir)
 library(ggplot2)
 
-r = read.table(file="../../dataset/synthetic/circle.txt", header=FALSE, skip=2, col.names=c("fcv","x","y","cls"))
+args = commandArgs(trailingOnly=TRUE)
+
+if (length(args)==0) {
+	stop("Missing argument for input file.", call.=FALSE)
+}
+
+r = read.table(file=args[1], header=FALSE, skip=2, col.names=c("fcv","x","y","cls"))
 r$cls = factor(r$cls)
 
-sel = 1 + as.integer(scan(file="sel/tmp.csv", what="int", sep = ","))
+sel = 1 + as.integer(scan(file="sel/tmp.csv", what="int", skip=1, sep=","))
 
 rs = data.frame(x=r$x[sel], y=r$y[sel], cls=r$cls[sel])
 

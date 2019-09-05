@@ -1,0 +1,20 @@
+#!/bin/bash
+
+listAlg=( CNN NET FCNN MSS VSS RSS 0.1-RSS 0.5-RSS 1-RSS HSS 0.1-HSS 0.5-HSS 1-HSS)
+
+echo -e "alg\tfile\tfold\tsize\terror\tcdmin\tcdq1\tcdmed\tcdq3\tcdmax\tcdavg\ttime"
+
+for file in `ls dataset/synthetic/v-*.txt dataset/uci/*.txt`
+do
+	f=$(basename $file .txt)
+	>&2 echo ">>> $f"
+	for alg in ${listAlg[*]}
+	do
+		>&2 echo "    $alg"
+		for i in {0..9}
+		do
+			echo -en "$alg\t$f\t$i\t"
+			./NNC $alg $file $i
+		done
+	done
+done

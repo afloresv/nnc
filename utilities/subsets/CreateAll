@@ -1,0 +1,17 @@
+#!/bin/bash
+
+listAlg=( CNN FCNN MSS VSS RSS 0.1-RSS 0.5-RSS 1-RSS 2-RSS HSS 0.1-HSS 0.5-HSS 1-HSS 2-HSS )
+
+for alg in ${listAlg[*]}
+do
+	echo -n "Computing $alg... "
+	./CreatePlot $alg $1
+	echo "done."
+done
+
+echo -n "Ploting entire dataset... "
+Rscript --vanilla PlotAll.R $1 2>>/dev/null
+echo "done."
+
+f=$(basename $1 .txt)
+mv img/tmp.png img/$f/Dataset.png

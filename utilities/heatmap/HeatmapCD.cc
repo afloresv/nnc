@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <vector>
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
 #include "../../src/Condensation.h"
 
 using namespace std;
@@ -55,22 +56,28 @@ int main(int argc, char* argv[]) {
 	}
 
 	Subset R(TR);
-	     if (!alg.compare("CNN"))      R = CNN(TR);
-	else if (!alg.compare("RNN"))      R = RNN(TR);
-	else if (!alg.compare("FCNN"))     R = FCNN(TR);
-	else if (!alg.compare("NET"))      R = NET(TR);
-	else if (!alg.compare("MSS"))      R = MSS(TR);
-	else if (!alg.compare("AlphaMSS")) R = AlphaMSS(TR,atof(argv[5]));
-	else if (!alg.compare("RSS"))      R = RSS(TR);
-	else if (!alg.compare("AlphaRSS")) R = AlphaRSS(TR,atof(argv[5]));
-	
+	     if (!alg.compare("CNN"))    R = CNN(TR);
+	else if (!alg.compare("RNN"))    R = RNN(TR);
+	else if (!alg.compare("FCNN"))   R = FCNN(TR);
+	else if (!alg.compare("NET"))    R = NET(TR);
+	else if (!alg.compare("MSS"))    R = MSS(TR);
+	else if (!alg.compare("RSS"))    R = RSS(TR);
+	else if (!alg.compare("VSS"))    R = VSS(TR);
+	else if (!alg.compare("HSS"))    R = HSS(TR);
+	else if (boost::algorithm::ends_with(alg,"-MSS"))
+		R = AlphaMSS(TR,atof(argv[2]));
+	else if (boost::algorithm::ends_with(alg,"-RSS"))
+		R = AlphaRSS(TR,atof(argv[2]));
+	else if (boost::algorithm::ends_with(alg,"-HSS"))
+		R = AlphaHSS(TR,atof(argv[2]));
+
 	ComputeCD(TR,R,atoi(argv[1]));
 
 	system("Rscript PlotCD.R");
 	char cmd[50];
-	sprintf(cmd, "mv data/tmp.csv data/%s%s.csv", alg.c_str(), argc==6 ? argv[5] : "");
+	sprintf(cmd, "mv data/tmp.csv data/%s.csv", alg.c_str());
 	system(cmd);
-	sprintf(cmd, "mv img/tmp.png img/%s%s.png", alg.c_str(), argc==6 ? argv[5] : "");
+	sprintf(cmd, "mv img/tmp.png img/%s.png", alg.c_str());
 	system(cmd);
 
 	return 0;
