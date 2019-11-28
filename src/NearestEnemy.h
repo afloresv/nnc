@@ -23,11 +23,19 @@ class NearestEnemy {
 	public:
 	NearestEnemy (Dataset &_D) : D(_D) {
 		nnall = new NearestNeighbor(D);
+		nnall->selfmatch(false);
 		for (int i=0 ; i<D.clss() ; i++)
 			nn.push_back(new KDtree(D));
 		neof = new int[D.size()];
 		for (int i=0 ; i<D.size() ; i++)
 			neof[i] = -1;
+	}
+	void setEpsilon(double epsilon) {
+		for (int i=0 ; i<D.size() ; i++)
+			neof[i] = -1;
+		nnall->setEpsilon(epsilon);
+		for (int i=0 ; i<D.clss() ; i++)
+			nn[i]->setEpsilon(epsilon);
 	}
 	void use (Subset &S) {
 		nnall->use(S);
@@ -35,6 +43,7 @@ class NearestEnemy {
 			nn[i]->use(S,i);
 	}
 	void all () {
+		nnall->all();
 		for (int i=0 ; i<D.clss() ; i++)
 			nn[i]->all(i);
 	}
@@ -52,6 +61,12 @@ class NearestEnemy {
 	}
 	double distance (Point p) {
 		return D.distance(p,D[of(p)]);
+	}
+	double chrom_density (int ind) {
+		double r1, rx;
+		r1 = nnall->distance(ind);
+		rx = distance(ind);
+		return (rx-r1) / r1;
 	}
 	double chrom_density (Point p) {
 		double r1, rx;

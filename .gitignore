@@ -1,8 +1,10 @@
 NNC
 
+*.tsv
 *.swp
 *.DS_Store
 *.Rhistory
 
 utilities/generation/*
 utilities/results/*
+utilities/poisons/*
