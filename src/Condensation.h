@@ -60,12 +60,14 @@ Subset RNN (Dataset &D) {
 // |    FCNN Algorithm    |
 // +----------------------+
 
-Subset FCNN (Dataset &D) {
+Subset AlphaFCNN (Dataset &D, double alpha) {
 	Subset R(D);
 	vector<int> S = D.centroids(),
 		nn(D.size(),-1),
+		ne(D.size(),-1),
 		rep(D.size(),-1);
-	vector<double> dnn(D.size(),numeric_limits<double>::max());
+	vector<double> dnn(D.size(),numeric_limits<double>::max()),
+				   dne(D.size(),numeric_limits<double>::max());
 
 	while (S.size() > 0) {
 		for (int i=0 ; i<S.size() ; i++) R.set(S[i]);
@@ -79,9 +81,13 @@ Subset FCNN (Dataset &D) {
 					nn[i] = S[j];
 					dnn[i] = d;
 				}
+				if (D[i].c != D[S[j]].c && d < dne[i]) {
+					ne[i] = S[j];
+					dne[i] = d;
+				}
 			}
-			if (D[i].c != D[nn[i]].c && (rep[nn[i]]==-1
-				|| dnn[i] < D.distance(nn[i],rep[nn[i]])))
+			if ((D[i].c != D[nn[i]].c || dnn[i] >= dne[i]/(1.0f+alpha)) &&
+				(rep[nn[i]]==-1 || dnn[i] < D.distance(nn[i],rep[nn[i]])))
 				rep[nn[i]] = i;
 		}
 		S.clear();
@@ -92,16 +98,23 @@ Subset FCNN (Dataset &D) {
 	return R;
 }
 
+Subset FCNN (Dataset &D) {
+	return AlphaFCNN(D, 0.0f);
+}
+
 
 // +----------------------+
 // |    SFCNN Algorithm   |
 // +----------------------+
 
-Subset SFCNN (Dataset &D) {
-	vector<int> nn(D.size(),-1),
-	            rep(D.size(),-1);
-	vector<double> dnn(D.size(),numeric_limits<double>::max());
+Subset AlphaSFCNN (Dataset &D, double alpha) {
 	Subset R(D);
+	vector<int> S = D.centroids(),
+		nn(D.size(),-1),
+		ne(D.size(),-1),
+		rep(D.size(),-1);
+	vector<double> dnn(D.size(),numeric_limits<double>::max()),
+				   dne(D.size(),numeric_limits<double>::max());
 	int current = 0,
 		new_point = 0;
 	while (new_point != -1) {
@@ -115,8 +128,12 @@ Subset SFCNN (Dataset &D) {
 				nn[i] = new_point;
 				dnn[i] = d;
 			}
-			if (D[i].c != D[nn[i]].c && (rep[nn[i]]==-1
-				|| dnn[i] < D.distance(nn[i],rep[nn[i]])))
+			if (D[i].c != D[new_point].c && d < dne[i]) {
+				ne[i] = new_point;
+				dne[i] = d;
+			}
+			if ((D[i].c != D[nn[i]].c || dnn[i] >= dne[i]/(1.0f+alpha)) &&
+				(rep[nn[i]]==-1 || dnn[i] < D.distance(nn[i],rep[nn[i]])))
 				rep[nn[i]] = i;
 		}
 		new_point = -1;
@@ -139,6 +156,10 @@ Subset SFCNN (Dataset &D) {
 	return R;
 }
 
+Subset SFCNN (Dataset &D) {
+	return AlphaSFCNN(D, 0.0f);
+}
+
 
 // +---------------------+
 // |    NET Algorithm    |
@@ -152,7 +173,7 @@ Subset AlphaNET (Dataset &D, double alpha) {
 	NearestEnemy NE(D);
 	NE.all();
 	vector<pair<double,int> > neo = NE.order();
-	double gamma = neo[0].first;
+	double gamma = neo[0].first / (1.0f + alpha);
 	bool add;
 
 	// Original NET - O(n^2)
@@ -173,7 +194,7 @@ Subset AlphaNET (Dataset &D, double alpha) {
 		if (!R[neo[i].second]) continue;
 		for (int j=i-1 ; j>=0 ; j--) {
 			if (!R[neo[j].second]) continue;
-			if (D.distance(neo[i].second,neo[j].second) < neo[i].first / 2.0f - gamma)
+			if (D.distance(neo[i].second,neo[j].second) < neo[i].first / (2.0f + 2*alpha) - gamma)
 				R.flip(neo[j].second);
 		}
 	}

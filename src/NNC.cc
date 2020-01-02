@@ -37,6 +37,10 @@ int main(int argc, char* argv[]) {
 		R = AlphaMSS(TR,atof(argv[1]));
 	else if (boost::algorithm::ends_with(alg,"-HSS"))
 		R = AlphaHSS(TR,atof(argv[1]));
+	else if (boost::algorithm::ends_with(alg,"-FCNN"))
+		R = AlphaFCNN(TR,atof(argv[1]));
+	else if (boost::algorithm::ends_with(alg,"-SFCNN"))
+		R = AlphaSFCNN(TR,atof(argv[1]));
 	else if (boost::algorithm::ends_with(alg,"-RSS")) {
 		double alpha, epsilon = 0.0;
 		string name(argv[1]);
